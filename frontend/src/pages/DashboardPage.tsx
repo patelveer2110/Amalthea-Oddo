@@ -1,5 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { projectsApi } from "@/api/projects"
+import { timesheetsApi } from "@/api/timesheets"
+import { tasksApi } from "@/api/tasks"
 import { useAuthStore } from "@/store/auth"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -16,8 +18,36 @@ export function DashboardPage() {
     },
   })
 
-  const activeProjects = projects.filter((p) => p.status === "ACTIVE").length
-  const totalBudget = projects.reduce((sum, p) => sum + (p.budgetAmount || 0), 0)
+  const isTeam = user?.role === "TEAM_MEMBER"
+  const isPMOrAdmin = user?.role === "PROJECT_MANAGER" || user?.role === "ADMIN"
+
+  // Team members: fetch only their timesheets for KPI
+  const { data: myTimesheets = [] } = useQuery({
+    queryKey: ["timesheets", user?.id],
+    queryFn: async () => (await timesheetsApi.getAll({ user: user?.id || "" })).data,
+    enabled: !!isTeam && !!user?.id,
+  })
+
+  // If team, attempt to filter to assigned projects when teamMembers available
+  const visibleProjects = isTeam
+    ? projects.filter((p: any) => Array.isArray(p.teamMembers) ? p.teamMembers.some((m: any) => m.id === user?.id) : true)
+    : projects
+
+  const activeProjects = visibleProjects.filter((p) => p.status === "ACTIVE").length
+  const totalBudget = visibleProjects.reduce((sum, p) => sum + (p.budgetAmount || 0), 0)
+  const myHours = isTeam ? myTimesheets.reduce((s: number, t: any) => s + (t.durationHours || 0), 0) : 0
+
+  // Team members: fetch tasks from visible projects and filter by assignee
+  const { data: myTasks = [] } = useQuery({
+    queryKey: ["myTasks", user?.id, visibleProjects.map((p: any) => p.id)],
+    queryFn: async () => {
+      const all = await Promise.all(
+        (visibleProjects as any[]).map(async (p: any) => (await tasksApi.getByProject(p.id)).data),
+      )
+      return all.flat().filter((t: any) => t.assigneeId === user?.id)
+    },
+    enabled: !!isTeam && visibleProjects.length > 0 && !!user?.id,
+  })
 
   return (
     <div className="space-y-8">
@@ -44,11 +74,11 @@ export function DashboardPage() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
               <Clock className="w-4 h-4" />
-              Total Hours Logged
+              {isTeam ? "My Hours Logged" : "Total Hours Logged"}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">248</p>
+            <p className="text-2xl font-bold">{isTeam ? myHours : 248}</p>
           </CardContent>
         </Card>
 
@@ -81,11 +111,11 @@ export function DashboardPage() {
       <div>
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold">Projects</h2>
-          <Button className="bg-blue-600 hover:bg-blue-700">New Project</Button>
+          {isPMOrAdmin && <Button className="bg-blue-600 hover:bg-blue-700">New Project</Button>}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {projects.map((project) => (
+          {visibleProjects.map((project) => (
             <Link key={project.id} to={`/projects/${project.id}`}>
               <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
                 <CardHeader>
@@ -120,6 +150,47 @@ export function DashboardPage() {
           ))}
         </div>
       </div>
+
+      {isTeam && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* My Tasks */}
+          <Card className="lg:col-span-2">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg">My Tasks</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {myTasks.length === 0 && <p className="text-sm text-gray-500">No tasks assigned yet.</p>}
+              {myTasks.slice(0, 8).map((t: any) => (
+                <div key={t.id} className="flex items-start justify-between border rounded-md p-3 bg-white">
+                  <div>
+                    <p className="font-medium">{t.title}</p>
+                    {t.description && <p className="text-sm text-gray-600 line-clamp-1">{t.description}</p>}
+                  </div>
+                  <span className="text-xs px-2 py-1 rounded bg-gray-100 text-gray-800">{t.state}</span>
+                </div>
+              ))}
+              {myTasks.length > 8 && (
+                <Link to="/tasks" className="text-sm text-blue-600 hover:underline">
+                  View all tasks
+                </Link>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* My Profile */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg">My Profile</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm">
+              <p><span className="text-gray-500">Name:</span> <span className="font-medium">{user?.fullName}</span></p>
+              <p><span className="text-gray-500">Email:</span> <span className="font-medium">{user?.email}</span></p>
+              <p><span className="text-gray-500">Role:</span> <span className="font-medium">{user?.role}</span></p>
+              <Link to="/profile" className="text-blue-600 hover:underline">Go to profile</Link>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   )
 }

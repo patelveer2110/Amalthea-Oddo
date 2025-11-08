@@ -19,6 +19,7 @@ exports.TasksModule = TasksModule = __decorate([
         imports: [prisma_module_1.PrismaModule],
         providers: [tasks_service_1.TasksService],
         controllers: [tasks_controller_1.TasksController],
+        exports: [tasks_service_1.TasksService],
     })
 ], TasksModule);
 //# sourceMappingURL=tasks.module.js.map

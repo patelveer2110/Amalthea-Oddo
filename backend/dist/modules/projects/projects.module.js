@@ -19,6 +19,7 @@ exports.ProjectsModule = ProjectsModule = __decorate([
         imports: [prisma_module_1.PrismaModule],
         providers: [projects_service_1.ProjectsService],
         controllers: [projects_controller_1.ProjectsController],
+        exports: [projects_service_1.ProjectsService],
     })
 ], ProjectsModule);
 //# sourceMappingURL=projects.module.js.map

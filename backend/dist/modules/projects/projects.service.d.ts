@@ -1,6 +1,16 @@
 import { PrismaService } from "@/prisma/prisma.service";
 export declare class ProjectsService {
     private prisma;
+    getProjectMetrics(): Promise<{
+        totalProjects: number;
+        totalRevenue: number;
+        totalCost: number;
+        totalProfit: number;
+    }>;
+    getUtilizationTrend(): Promise<Array<{
+        month: string;
+        utilization: number;
+    }>>;
     constructor(prisma: PrismaService);
     findAll(filters?: any): Promise<({
         projectManager: {
@@ -23,13 +33,13 @@ export declare class ProjectsService {
         updatedAt: Date;
         name: string;
         description: string | null;
+        currency: string;
         code: string;
         customerId: string | null;
         projectManagerId: string;
         startDate: Date;
         endDate: Date | null;
         budgetAmount: import("@prisma/client/runtime/library").Decimal | null;
-        currency: string;
         billableFlag: boolean;
         projectType: import(".prisma/client").$Enums.ProjectType;
     })[]>;
@@ -40,8 +50,8 @@ export declare class ProjectsService {
             createdAt: Date;
             updatedAt: Date;
             projectId: string;
-            userId: string;
             notes: string | null;
+            userId: string;
             taskId: string | null;
             workDate: Date;
             durationHours: import("@prisma/client/runtime/library").Decimal;
@@ -55,10 +65,10 @@ export declare class ProjectsService {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            currency: string;
             projectId: string;
-            userId: string;
+            currency: string;
             notes: string | null;
+            userId: string;
             amount: import("@prisma/client/runtime/library").Decimal;
             billable: boolean;
             date: Date;
@@ -100,13 +110,13 @@ export declare class ProjectsService {
         updatedAt: Date;
         name: string;
         description: string | null;
+        currency: string;
         code: string;
         customerId: string | null;
         projectManagerId: string;
         startDate: Date;
         endDate: Date | null;
         budgetAmount: import("@prisma/client/runtime/library").Decimal | null;
-        currency: string;
         billableFlag: boolean;
         projectType: import(".prisma/client").$Enums.ProjectType;
     }) | null>;
@@ -124,13 +134,13 @@ export declare class ProjectsService {
         updatedAt: Date;
         name: string;
         description: string | null;
+        currency: string;
         code: string;
         customerId: string | null;
         projectManagerId: string;
         startDate: Date;
         endDate: Date | null;
         budgetAmount: import("@prisma/client/runtime/library").Decimal | null;
-        currency: string;
         billableFlag: boolean;
         projectType: import(".prisma/client").$Enums.ProjectType;
     }>;
@@ -142,13 +152,13 @@ export declare class ProjectsService {
         updatedAt: Date;
         name: string;
         description: string | null;
+        currency: string;
         code: string;
         customerId: string | null;
         projectManagerId: string;
         startDate: Date;
         endDate: Date | null;
         budgetAmount: import("@prisma/client/runtime/library").Decimal | null;
-        currency: string;
         billableFlag: boolean;
         projectType: import(".prisma/client").$Enums.ProjectType;
     }>;

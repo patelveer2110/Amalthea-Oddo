@@ -28,13 +28,13 @@ export declare class FinanceService {
             updatedAt: Date;
             name: string;
             description: string | null;
+            currency: string;
             code: string;
             customerId: string | null;
             projectManagerId: string;
             startDate: Date;
             endDate: Date | null;
             budgetAmount: import("@prisma/client/runtime/library").Decimal | null;
-            currency: string;
             billableFlag: boolean;
             projectType: import(".prisma/client").$Enums.ProjectType;
         } | null;
@@ -44,10 +44,10 @@ export declare class FinanceService {
         status: import(".prisma/client").$Enums.DocumentStatus;
         createdAt: Date;
         updatedAt: Date;
-        customerId: string | null;
-        currency: string;
         projectId: string | null;
         totalAmount: import("@prisma/client/runtime/library").Decimal;
+        currency: string;
+        customerId: string | null;
         customerName: string | null;
     })[]>;
     createSalesOrder(data: any): Promise<{
@@ -56,10 +56,10 @@ export declare class FinanceService {
         status: import(".prisma/client").$Enums.DocumentStatus;
         createdAt: Date;
         updatedAt: Date;
-        customerId: string | null;
-        currency: string;
         projectId: string | null;
         totalAmount: import("@prisma/client/runtime/library").Decimal;
+        currency: string;
+        customerId: string | null;
         customerName: string | null;
     }>;
     getInvoices(projectId?: string): Promise<({
@@ -71,13 +71,13 @@ export declare class FinanceService {
             updatedAt: Date;
             name: string;
             description: string | null;
+            currency: string;
             code: string;
             customerId: string | null;
             projectManagerId: string;
             startDate: Date;
             endDate: Date | null;
             budgetAmount: import("@prisma/client/runtime/library").Decimal | null;
-            currency: string;
             billableFlag: boolean;
             projectType: import(".prisma/client").$Enums.ProjectType;
         } | null;
@@ -98,10 +98,10 @@ export declare class FinanceService {
         status: import(".prisma/client").$Enums.DocumentStatus;
         createdAt: Date;
         updatedAt: Date;
-        currency: string;
         projectId: string | null;
         sourceSoId: string | null;
         totalAmount: import("@prisma/client/runtime/library").Decimal;
+        currency: string;
         dueDate: Date | null;
         notes: string | null;
     })[]>;

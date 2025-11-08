@@ -1,5 +1,6 @@
 import { TasksService } from "./tasks.service";
 import { $Enums } from "@prisma/client";
+import { CreateTaskDto } from "./dto/create-task.dto";
 declare class MoveTaskDto {
     state: $Enums.TaskState;
 }
@@ -13,8 +14,8 @@ export declare class TasksController {
             createdAt: Date;
             updatedAt: Date;
             projectId: string;
-            userId: string;
             notes: string | null;
+            userId: string;
             taskId: string | null;
             workDate: Date;
             durationHours: import("@prisma/client/runtime/library").Decimal;
@@ -49,6 +50,12 @@ export declare class TasksController {
         assigneeId: string | null;
         estimateHours: import("@prisma/client/runtime/library").Decimal | null;
     })[]>;
+    getProjectTeamMembers(projectId: string): Promise<{
+        id: string;
+        fullName: string;
+        email: string;
+        role: string;
+    }[]>;
     findById(id: string): Promise<({
         timesheets: {
             id: string;
@@ -56,8 +63,8 @@ export declare class TasksController {
             createdAt: Date;
             updatedAt: Date;
             projectId: string;
-            userId: string;
             notes: string | null;
+            userId: string;
             taskId: string | null;
             workDate: Date;
             durationHours: import("@prisma/client/runtime/library").Decimal;
@@ -108,7 +115,46 @@ export declare class TasksController {
         assigneeId: string | null;
         estimateHours: import("@prisma/client/runtime/library").Decimal | null;
     }) | null>;
-    create(projectId: string, body: any): Promise<{
+    create(projectId: string, data: CreateTaskDto): Promise<{
+        project: {
+            teamMembers: ({
+                user: {
+                    email: string;
+                    fullName: string;
+                    id: string;
+                    passwordHash: string;
+                    role: $Enums.UserRole;
+                    status: $Enums.UserStatus;
+                    defaultHourlyRate: import("@prisma/client/runtime/library").Decimal;
+                    timezone: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                };
+            } & {
+                id: string;
+                role: string;
+                projectId: string;
+                userId: string;
+                addedAt: Date;
+            })[];
+        } & {
+            id: string;
+            status: $Enums.ProjectStatus;
+            defaultHourlyRate: import("@prisma/client/runtime/library").Decimal | null;
+            createdAt: Date;
+            updatedAt: Date;
+            name: string;
+            description: string | null;
+            currency: string;
+            code: string;
+            customerId: string | null;
+            projectManagerId: string;
+            startDate: Date;
+            endDate: Date | null;
+            budgetAmount: import("@prisma/client/runtime/library").Decimal | null;
+            billableFlag: boolean;
+            projectType: $Enums.ProjectType;
+        };
         assignee: {
             email: string;
             fullName: string;

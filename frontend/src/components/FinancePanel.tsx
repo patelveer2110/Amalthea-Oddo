@@ -45,6 +45,8 @@ export function FinancePanel({ projectId }: { projectId: string }) {
             <CardContent className="p-4 flex items-center gap-3">
               <input
                 type="checkbox"
+                title={`Select timesheet on ${new Date(ts.workDate).toLocaleDateString()}`}
+                aria-label={`Select timesheet on ${new Date(ts.workDate).toLocaleDateString()}`}
                 checked={selectedTimesheets.includes(ts.id)}
                 onChange={() => toggleTimesheet(ts.id)}
                 className="w-4 h-4 text-blue-600 cursor-pointer"

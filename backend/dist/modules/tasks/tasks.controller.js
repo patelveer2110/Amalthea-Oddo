@@ -19,6 +19,7 @@ const jwt_guard_1 = require("../../common/guards/jwt.guard");
 const tasks_service_1 = require("./tasks.service");
 const client_1 = require("@prisma/client");
 const class_validator_1 = require("class-validator");
+const create_task_dto_1 = require("./dto/create-task.dto");
 // ✅ DTO for moving task
 class MoveTaskDto {
 }
@@ -33,11 +34,20 @@ let TasksController = class TasksController {
     async findByProject(projectId) {
         return this.tasksService.findByProject(projectId);
     }
+    async getProjectTeamMembers(projectId) {
+        const project = await this.tasksService.getProjectWithTeamMembers(projectId);
+        return project.teamMembers.map(member => ({
+            id: member.user.id,
+            fullName: member.user.fullName,
+            email: member.user.email,
+            role: member.role
+        }));
+    }
     async findById(id) {
         return this.tasksService.findById(id);
     }
-    async create(projectId, body) {
-        return this.tasksService.create(projectId, body);
+    async create(projectId, data) {
+        return this.tasksService.create(projectId, data);
     }
     async update(id, body) {
         return this.tasksService.update(id, body);
@@ -55,6 +65,13 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], TasksController.prototype, "findByProject", null);
 __decorate([
+    (0, common_1.Get)("projects/:projectId/team-members"),
+    __param(0, (0, common_1.Param)("projectId")),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], TasksController.prototype, "getProjectTeamMembers", null);
+__decorate([
     (0, common_1.Get)("tasks/:id"),
     __param(0, (0, common_1.Param)("id")),
     __metadata("design:type", Function),
@@ -66,7 +83,7 @@ __decorate([
     __param(0, (0, common_1.Param)("projectId")),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:paramtypes", [String, create_task_dto_1.CreateTaskDto]),
     __metadata("design:returntype", Promise)
 ], TasksController.prototype, "create", null);
 __decorate([

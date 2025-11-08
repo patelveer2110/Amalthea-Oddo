@@ -4,6 +4,7 @@ import { JwtAuthGuard } from "@/common/guards/jwt.guard"
 import { TasksService } from "./tasks.service"
 import { $Enums } from "@prisma/client"
 import { IsEnum } from "class-validator"
+import { CreateTaskDto } from "./dto/create-task.dto"
 
 // ✅ DTO for moving task
 class MoveTaskDto {
@@ -23,14 +24,25 @@ export class TasksController {
     return this.tasksService.findByProject(projectId)
   }
 
+  @Get("projects/:projectId/team-members")
+  async getProjectTeamMembers(@Param("projectId") projectId: string) {
+    const project = await this.tasksService.getProjectWithTeamMembers(projectId);
+    return project.teamMembers.map(member => ({
+      id: member.user.id,
+      fullName: member.user.fullName,
+      email: member.user.email,
+      role: member.role
+    }));
+  }
+
   @Get("tasks/:id")
   async findById(@Param("id") id: string) {
     return this.tasksService.findById(id)
   }
 
   @Post("projects/:projectId/tasks")
-  async create(@Param("projectId") projectId: string, @Body() body: any) {
-    return this.tasksService.create(projectId, body)
+  async create(@Param("projectId") projectId: string, @Body() data: CreateTaskDto) {
+    return this.tasksService.create(projectId, data)
   }
 
   @Put("tasks/:id")

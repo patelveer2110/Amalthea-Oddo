@@ -10,9 +10,13 @@ interface TabsContextType {
 
 const TabsContext = createContext<TabsContextType>({ activeTab: "", setActiveTab: () => {} })
 
-export const Tabs = ({ children, defaultValue }: { children: React.ReactNode; defaultValue?: string }) => {
+export const Tabs = ({ children, defaultValue, className }: { children: React.ReactNode; defaultValue?: string; className?: string }) => {
   const [activeTab, setActiveTab] = useState(defaultValue || "")
-  return <TabsContext.Provider value={{ activeTab, setActiveTab }}>{children}</TabsContext.Provider>
+  return (
+    <div className={className}>
+      <TabsContext.Provider value={{ activeTab, setActiveTab }}>{children}</TabsContext.Provider>
+    </div>
+  )
 }
 
 export const TabsList = ({ children, className }: { children: React.ReactNode; className?: string }) => (
@@ -34,7 +38,7 @@ export const TabsTrigger = ({ value, children }: { value: string; children: Reac
   )
 }
 
-export const TabsContent = ({ value, children }: { value: string; children: React.ReactNode }) => {
+export const TabsContent = ({ value, children, className }: { value: string; children: React.ReactNode; className?: string }) => {
   const { activeTab } = React.useContext(TabsContext)
-  return activeTab === value ? <div>{children}</div> : null
+  return activeTab === value ? <div className={className}>{children}</div> : null
 }

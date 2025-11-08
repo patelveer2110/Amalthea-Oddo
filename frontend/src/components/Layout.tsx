@@ -7,6 +7,7 @@ import { useAuthStore } from "@/store/auth"
 import { Button } from "./ui/button"
 import { LogOut, Menu } from "lucide-react"
 import { useState } from "react"
+import { Link } from "react-router-dom"
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate()
@@ -44,24 +45,25 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {sidebarOpen && (
           <aside className="w-64 bg-white border-r border-gray-200 p-6 hidden lg:block">
             <nav className="space-y-3">
-              <a href="/dashboard" className="block px-4 py-2 rounded-lg hover:bg-gray-100 text-sm font-medium">
-                Dashboard
-              </a>
-              <a href="#" className="block px-4 py-2 rounded-lg hover:bg-gray-100 text-sm font-medium">
-                Projects
-              </a>
-              <a href="#" className="block px-4 py-2 rounded-lg hover:bg-gray-100 text-sm font-medium">
-                Tasks
-              </a>
-              <a href="#" className="block px-4 py-2 rounded-lg hover:bg-gray-100 text-sm font-medium">
+              <Link to="/dashboard" className="block px-4 py-2 rounded-lg hover:bg-gray-100 text-sm font-medium">Dashboard</Link>
+              <Link to="/dashboard" className="block px-4 py-2 rounded-lg hover:bg-gray-100 text-sm font-medium">Projects</Link>
+              <Link to="/tasks" className="block px-4 py-2 rounded-lg hover:bg-gray-100 text-sm font-medium">Tasks</Link>
+              <Link to="/analytics" className="block px-4 py-2 rounded-lg hover:bg-gray-100 text-sm font-medium">
+                Analytics
+              </Link>
+              <Link to="/timesheets" className="block px-4 py-2 rounded-lg hover:bg-gray-100 text-sm font-medium">
                 Timesheets
-              </a>
-              <a href="#" className="block px-4 py-2 rounded-lg hover:bg-gray-100 text-sm font-medium">
+              </Link>
+              <Link to="/finance" className="block px-4 py-2 rounded-lg hover:bg-gray-100 text-sm font-medium">
                 Finance
-              </a>
-              <a href="#" className="block px-4 py-2 rounded-lg hover:bg-gray-100 text-sm font-medium">
-                Reports
-              </a>
+              </Link>
+              <Link to="/expenses" className="block px-4 py-2 rounded-lg hover:bg-gray-100 text-sm font-medium">
+                Expenses
+              </Link>
+              <Link to="/settings" className="block px-4 py-2 rounded-lg hover:bg-gray-100 text-sm font-medium">Settings</Link>
+              <Link to="/profile" className="block px-4 py-2 rounded-lg hover:bg-gray-100 text-sm font-medium">
+                My Profile
+              </Link>
             </nav>
           </aside>
         )}

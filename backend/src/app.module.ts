@@ -12,6 +12,7 @@ import { ExpensesModule } from "./modules/expenses/expenses.module"
 import { FinanceModule } from "./modules/finance/finance.module"
 import { AttachmentsModule } from "./modules/attachments/attachments.module"
 import { AuditModule } from "./modules/audit/audit.module"
+import { AnalyticsModule } from "./modules/analytics/analytics.module"
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { AuditModule } from "./modules/audit/audit.module"
     AuthModule,
     UsersModule,
     ProjectsModule,
+    AnalyticsModule,
     TasksModule,
     TimesheetsModule,
     ExpensesModule,

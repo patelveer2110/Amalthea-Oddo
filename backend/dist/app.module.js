@@ -21,6 +21,7 @@ const expenses_module_1 = require("./modules/expenses/expenses.module");
 const finance_module_1 = require("./modules/finance/finance.module");
 const attachments_module_1 = require("./modules/attachments/attachments.module");
 const audit_module_1 = require("./modules/audit/audit.module");
+const analytics_module_1 = require("./modules/analytics/analytics.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -40,6 +41,7 @@ exports.AppModule = AppModule = __decorate([
             auth_module_1.AuthModule,
             users_module_1.UsersModule,
             projects_module_1.ProjectsModule,
+            analytics_module_1.AnalyticsModule,
             tasks_module_1.TasksModule,
             timesheets_module_1.TimesheetsModule,
             expenses_module_1.ExpensesModule,

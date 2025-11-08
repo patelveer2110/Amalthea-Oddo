@@ -96,7 +96,7 @@ export function ProjectPage() {
         </TabsList>
 
         <TabsContent value="tasks" className="p-4">
-          <TaskBoard projectId={projectId!} />
+          <TaskBoard projectId={projectId!} teamMembers={project.teamMembers} />
         </TabsContent>
 
         <TabsContent value="timesheets" className="p-4">
