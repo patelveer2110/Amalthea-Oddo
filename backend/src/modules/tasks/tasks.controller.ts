@@ -1,0 +1,45 @@
+import { Controller, Get, Post, Put, Param, Body, UseGuards } from "@nestjs/common"
+import { ApiTags, ApiBearerAuth } from "@nestjs/swagger"
+import { JwtAuthGuard } from "@/common/guards/jwt.guard"
+import { TasksService } from "./tasks.service"
+import { $Enums } from "@prisma/client"
+import { IsEnum } from "class-validator"
+
+// ✅ DTO for moving task
+class MoveTaskDto {
+  @IsEnum($Enums.TaskState)
+  state: $Enums.TaskState
+}
+
+@ApiTags("Tasks")
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
+@Controller("api/v1")
+export class TasksController {
+  constructor(private readonly tasksService: TasksService) {}
+
+  @Get("projects/:projectId/tasks")
+  async findByProject(@Param("projectId") projectId: string) {
+    return this.tasksService.findByProject(projectId)
+  }
+
+  @Get("tasks/:id")
+  async findById(@Param("id") id: string) {
+    return this.tasksService.findById(id)
+  }
+
+  @Post("projects/:projectId/tasks")
+  async create(@Param("projectId") projectId: string, @Body() body: any) {
+    return this.tasksService.create(projectId, body)
+  }
+
+  @Put("tasks/:id")
+  async update(@Param("id") id: string, @Body() body: any) {
+    return this.tasksService.update(id, body)
+  }
+
+  @Post("tasks/:id/move")
+  async moveTask(@Param("id") id: string, @Body() body: MoveTaskDto) {
+    return this.tasksService.moveTask(id, body.state)
+  }
+}
