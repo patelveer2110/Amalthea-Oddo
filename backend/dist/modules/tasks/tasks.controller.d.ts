@@ -8,6 +8,10 @@ export declare class TasksController {
     private readonly tasksService;
     constructor(tasksService: TasksService);
     findByProject(projectId: string): Promise<({
+        project: {
+            id: string;
+            name: string;
+        };
         timesheets: {
             id: string;
             status: $Enums.TimesheetStatus;
@@ -56,7 +60,25 @@ export declare class TasksController {
         email: string;
         role: string;
     }[]>;
-    findById(id: string): Promise<({
+    findById(id: string): Promise<{
+        project: {
+            id: string;
+            status: $Enums.ProjectStatus;
+            defaultHourlyRate: import("@prisma/client/runtime/library").Decimal | null;
+            createdAt: Date;
+            updatedAt: Date;
+            name: string;
+            description: string | null;
+            currency: string;
+            code: string;
+            customerId: string | null;
+            projectManagerId: string;
+            startDate: Date;
+            endDate: Date | null;
+            budgetAmount: import("@prisma/client/runtime/library").Decimal | null;
+            billableFlag: boolean;
+            projectType: $Enums.ProjectType;
+        };
         timesheets: {
             id: string;
             status: $Enums.TimesheetStatus;
@@ -114,30 +136,9 @@ export declare class TasksController {
         priority: $Enums.TaskPriority;
         assigneeId: string | null;
         estimateHours: import("@prisma/client/runtime/library").Decimal | null;
-    }) | null>;
+    }>;
     create(projectId: string, data: CreateTaskDto): Promise<{
         project: {
-            teamMembers: ({
-                user: {
-                    email: string;
-                    fullName: string;
-                    id: string;
-                    passwordHash: string;
-                    role: $Enums.UserRole;
-                    status: $Enums.UserStatus;
-                    defaultHourlyRate: import("@prisma/client/runtime/library").Decimal;
-                    timezone: string;
-                    createdAt: Date;
-                    updatedAt: Date;
-                };
-            } & {
-                id: string;
-                role: string;
-                projectId: string;
-                userId: string;
-                addedAt: Date;
-            })[];
-        } & {
             id: string;
             status: $Enums.ProjectStatus;
             defaultHourlyRate: import("@prisma/client/runtime/library").Decimal | null;
@@ -181,6 +182,37 @@ export declare class TasksController {
         estimateHours: import("@prisma/client/runtime/library").Decimal | null;
     }>;
     update(id: string, body: any): Promise<{
+        project: {
+            id: string;
+            status: $Enums.ProjectStatus;
+            defaultHourlyRate: import("@prisma/client/runtime/library").Decimal | null;
+            createdAt: Date;
+            updatedAt: Date;
+            name: string;
+            description: string | null;
+            currency: string;
+            code: string;
+            customerId: string | null;
+            projectManagerId: string;
+            startDate: Date;
+            endDate: Date | null;
+            budgetAmount: import("@prisma/client/runtime/library").Decimal | null;
+            billableFlag: boolean;
+            projectType: $Enums.ProjectType;
+        };
+        assignee: {
+            email: string;
+            fullName: string;
+            id: string;
+            passwordHash: string;
+            role: $Enums.UserRole;
+            status: $Enums.UserStatus;
+            defaultHourlyRate: import("@prisma/client/runtime/library").Decimal;
+            timezone: string;
+            createdAt: Date;
+            updatedAt: Date;
+        } | null;
+    } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
@@ -194,6 +226,37 @@ export declare class TasksController {
         estimateHours: import("@prisma/client/runtime/library").Decimal | null;
     }>;
     moveTask(id: string, body: MoveTaskDto): Promise<{
+        project: {
+            id: string;
+            status: $Enums.ProjectStatus;
+            defaultHourlyRate: import("@prisma/client/runtime/library").Decimal | null;
+            createdAt: Date;
+            updatedAt: Date;
+            name: string;
+            description: string | null;
+            currency: string;
+            code: string;
+            customerId: string | null;
+            projectManagerId: string;
+            startDate: Date;
+            endDate: Date | null;
+            budgetAmount: import("@prisma/client/runtime/library").Decimal | null;
+            billableFlag: boolean;
+            projectType: $Enums.ProjectType;
+        };
+        assignee: {
+            email: string;
+            fullName: string;
+            id: string;
+            passwordHash: string;
+            role: $Enums.UserRole;
+            status: $Enums.UserStatus;
+            defaultHourlyRate: import("@prisma/client/runtime/library").Decimal;
+            timezone: string;
+            createdAt: Date;
+            updatedAt: Date;
+        } | null;
+    } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;

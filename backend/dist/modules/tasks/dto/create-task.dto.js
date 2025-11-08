@@ -36,12 +36,12 @@ __decorate([
     __metadata("design:type", String)
 ], CreateTaskDto.prototype, "priority", void 0);
 __decorate([
-    (0, class_validator_1.IsUUID)(),
     (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)({ message: "assigneeId must be a string (UUID or cuid)" }),
     __metadata("design:type", String)
 ], CreateTaskDto.prototype, "assigneeId", void 0);
 __decorate([
-    (0, class_validator_1.IsNumber)(),
+    (0, class_transformer_1.Type)(() => Number),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Number)
 ], CreateTaskDto.prototype, "estimateHours", void 0);

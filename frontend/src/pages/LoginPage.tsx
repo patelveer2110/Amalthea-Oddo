@@ -73,13 +73,13 @@ export function LoginPage() {
               {isLoading ? "Signing in..." : "Sign In"}
             </Button>
 
-            {/* <div className="text-xs text-gray-500 space-y-1 bg-gray-50 p-3 rounded">
+            <div className="text-xs text-gray-500 space-y-1 bg-gray-50 p-3 rounded">
               <p className="font-semibold">Test Credentials:</p>
               <p>Admin: admin@oneflow.local / admin@123</p>
               <p>PM: pm@oneflow.local / pm@123</p>
               <p>Finance: finance@oneflow.local / finance@123</p>
               <p>Team: team@oneflow.local / team@123</p>
-            </div> */}
+            </div>
           </form>
         </CardContent>
       </Card>

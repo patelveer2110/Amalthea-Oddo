@@ -19,7 +19,9 @@ let UsersController = class UsersController {
         this.usersService = usersService;
     }
     async findAll() {
-        return this.usersService.findAll();
+        const users = this.usersService.findAll();
+        console.log("Users", users);
+        return users;
     }
     async findById(id) {
         return this.usersService.findById(id);

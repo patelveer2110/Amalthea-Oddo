@@ -17,7 +17,7 @@ let UsersService = class UsersService {
         this.prisma = prisma;
     }
     async findAll() {
-        return this.prisma.user.findMany({
+        const users = this.prisma.user.findMany({
             select: {
                 id: true,
                 email: true,
@@ -27,6 +27,8 @@ let UsersService = class UsersService {
                 createdAt: true,
             },
         });
+        console.log(users);
+        return users;
     }
     async findById(id) {
         return this.prisma.user.findUnique({

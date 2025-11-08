@@ -1,6 +1,6 @@
 import { TaskPriority, TaskState } from "@prisma/client";
-import { IsString, IsOptional, IsEnum, IsNumber, IsDate, IsUUID } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsString, IsOptional, IsEnum, IsNumber, IsDate } from "class-validator";
+import { Type } from "class-transformer";
 
 export class CreateTaskDto {
   @IsString()
@@ -18,11 +18,12 @@ export class CreateTaskDto {
   @IsOptional()
   priority?: TaskPriority;
 
-  @IsUUID()
+  // ✅ CHANGED — now accepts any string (UUID, cuid, etc.)
   @IsOptional()
+  @IsString({ message: "assigneeId must be a string (UUID or cuid)" })
   assigneeId?: string;
 
-  @IsNumber()
+  @Type(() => Number)
   @IsOptional()
   estimateHours?: number;
 

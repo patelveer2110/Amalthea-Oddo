@@ -5,6 +5,10 @@ export declare class TasksService {
     private prisma;
     constructor(prisma: PrismaService);
     findByProject(projectId: string): Promise<({
+        project: {
+            id: string;
+            name: string;
+        };
         timesheets: {
             id: string;
             status: $Enums.TimesheetStatus;
@@ -86,8 +90,25 @@ export declare class TasksService {
         billableFlag: boolean;
         projectType: $Enums.ProjectType;
     }>;
-    private validateAssignee;
-    findById(id: string): Promise<({
+    findById(id: string): Promise<{
+        project: {
+            id: string;
+            status: $Enums.ProjectStatus;
+            defaultHourlyRate: Prisma.Decimal | null;
+            createdAt: Date;
+            updatedAt: Date;
+            name: string;
+            description: string | null;
+            currency: string;
+            code: string;
+            customerId: string | null;
+            projectManagerId: string;
+            startDate: Date;
+            endDate: Date | null;
+            budgetAmount: Prisma.Decimal | null;
+            billableFlag: boolean;
+            projectType: $Enums.ProjectType;
+        };
         timesheets: {
             id: string;
             status: $Enums.TimesheetStatus;
@@ -145,30 +166,12 @@ export declare class TasksService {
         priority: $Enums.TaskPriority;
         assigneeId: string | null;
         estimateHours: Prisma.Decimal | null;
-    }) | null>;
+    }>;
+    /**
+     * ✅ Create task — allows any valid user (not just project members)
+     */
     create(projectId: string, data: CreateTaskDto): Promise<{
         project: {
-            teamMembers: ({
-                user: {
-                    email: string;
-                    fullName: string;
-                    id: string;
-                    passwordHash: string;
-                    role: $Enums.UserRole;
-                    status: $Enums.UserStatus;
-                    defaultHourlyRate: Prisma.Decimal;
-                    timezone: string;
-                    createdAt: Date;
-                    updatedAt: Date;
-                };
-            } & {
-                id: string;
-                role: string;
-                projectId: string;
-                userId: string;
-                addedAt: Date;
-            })[];
-        } & {
             id: string;
             status: $Enums.ProjectStatus;
             defaultHourlyRate: Prisma.Decimal | null;
@@ -211,7 +214,43 @@ export declare class TasksService {
         assigneeId: string | null;
         estimateHours: Prisma.Decimal | null;
     }>;
-    update(id: string, data: any): Promise<{
+    /**
+     * ✅ Update task — allows assigning any valid user
+     */
+    update(id: string, data: Prisma.TaskUpdateInput & {
+        assigneeId?: string | null;
+    }): Promise<{
+        project: {
+            id: string;
+            status: $Enums.ProjectStatus;
+            defaultHourlyRate: Prisma.Decimal | null;
+            createdAt: Date;
+            updatedAt: Date;
+            name: string;
+            description: string | null;
+            currency: string;
+            code: string;
+            customerId: string | null;
+            projectManagerId: string;
+            startDate: Date;
+            endDate: Date | null;
+            budgetAmount: Prisma.Decimal | null;
+            billableFlag: boolean;
+            projectType: $Enums.ProjectType;
+        };
+        assignee: {
+            email: string;
+            fullName: string;
+            id: string;
+            passwordHash: string;
+            role: $Enums.UserRole;
+            status: $Enums.UserStatus;
+            defaultHourlyRate: Prisma.Decimal;
+            timezone: string;
+            createdAt: Date;
+            updatedAt: Date;
+        } | null;
+    } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
@@ -225,6 +264,37 @@ export declare class TasksService {
         estimateHours: Prisma.Decimal | null;
     }>;
     moveTask(id: string, newState: $Enums.TaskState): Promise<{
+        project: {
+            id: string;
+            status: $Enums.ProjectStatus;
+            defaultHourlyRate: Prisma.Decimal | null;
+            createdAt: Date;
+            updatedAt: Date;
+            name: string;
+            description: string | null;
+            currency: string;
+            code: string;
+            customerId: string | null;
+            projectManagerId: string;
+            startDate: Date;
+            endDate: Date | null;
+            budgetAmount: Prisma.Decimal | null;
+            billableFlag: boolean;
+            projectType: $Enums.ProjectType;
+        };
+        assignee: {
+            email: string;
+            fullName: string;
+            id: string;
+            passwordHash: string;
+            role: $Enums.UserRole;
+            status: $Enums.UserStatus;
+            defaultHourlyRate: Prisma.Decimal;
+            timezone: string;
+            createdAt: Date;
+            updatedAt: Date;
+        } | null;
+    } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;

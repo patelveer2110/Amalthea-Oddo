@@ -3,62 +3,164 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { projectsApi } from "../api/projects"
 import { timesheetsApi } from "../api/timesheets"
 import { expensesApi } from "../api/expenses"
+import { usersApi } from "../api/users"
+import { tasksApi } from "../api/tasks"
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
 import { Button } from "../components/ui/button"
 import { Link } from "react-router-dom"
 
 export function DashboardManagerPage() {
   const queryClient = useQueryClient()
-  const { data: projects = [] } = useQuery({ queryKey: ["projects"], queryFn: async () => (await projectsApi.getAll()).data })
-  const { data: timesheets = [] } = useQuery({ queryKey: ["timesheets"], queryFn: async () => (await timesheetsApi.getAll()).data })
-  const { data: expenses = [] } = useQuery({ queryKey: ["expenses"], queryFn: async () => (await expensesApi.getAll()).data })
 
+  // --- Real-time settings ---
+  const POLL_MS = 15_000
+
+  // 🔹 Queries (auto-refresh)
+  const { data: projects = [] } = useQuery({
+    queryKey: ["projects"],
+    queryFn: async () => (await projectsApi.getAll()).data,
+    refetchInterval: POLL_MS,
+    refetchOnWindowFocus: true,
+  })
+
+  const { data: timesheets = [] } = useQuery({
+    queryKey: ["timesheets"],
+    queryFn: async () => (await timesheetsApi.getAll()).data,
+    refetchInterval: POLL_MS,
+    refetchOnWindowFocus: true,
+  })
+
+  const { data: expenses = [] } = useQuery({
+    queryKey: ["expenses"],
+    queryFn: async () => (await expensesApi.getAll()).data,
+    refetchInterval: POLL_MS,
+    refetchOnWindowFocus: true,
+  })
+
+  const { data: users = [] } = useQuery({
+    queryKey: ["users"],
+    queryFn: async () => (await usersApi.getAll()).data,
+    refetchInterval: POLL_MS,
+    refetchOnWindowFocus: true,
+  })
+
+  // ✅ Task analytics (DONE count for "Tasks Completed")
+  const { data: taskAnalytics = [] } = useQuery({
+    queryKey: ["tasks-analytics"],
+    queryFn: async () => (await tasksApi.getAnalytics()).data,
+    refetchInterval: POLL_MS,
+    refetchOnWindowFocus: true,
+  })
+
+  // 🔹 Stats (computed)
   const active = projects.filter((p: any) => p.status === "ACTIVE").length
-  const hoursLogged = timesheets.reduce((s: number, t: any) => s + (t.durationHours || 0), 0)
-  const approvedExpenses = expenses.filter((e: any) => e.approved).length
+  const hoursLogged = timesheets.reduce((s: number, t: any) => s + (Number(t.durationHours) || 0), 0)
+  const approvedExpenses = expenses.filter((e: any) => !!e.approved).length
+  const tasksCompleted = taskAnalytics
+  .filter((x: any) => String(x.name).toUpperCase() === "DONE")
+  .reduce((sum: number, x: any) => sum + Number(x.value || 0), 0)
 
-  const [showCreate, setShowCreate] = useState(false)
-  const [newProject, setNewProject] = useState<{ name: string; code: string; budgetAmount?: number; currency: string }>(
-    { name: "", code: "", currency: "USD" },
-  )
 
-  const createMutation = useMutation({
+  // 🔹 UI states
+  const [showCreateProject, setShowCreateProject] = useState(false)
+
+  // 🔹 New Project form state
+  const [newProject, setNewProject] = useState({
+    name: "",
+    code: "",
+    currency: "USD",
+    budgetAmount: undefined as number | undefined,
+  })
+
+  const createProjectMutation = useMutation({
     mutationFn: () =>
       projectsApi.create({
-        name: newProject.name,
-        code: newProject.code,
-        budgetAmount: newProject.budgetAmount,
-        currency: newProject.currency,
+        ...newProject,
         status: "PLANNING",
         startDate: new Date().toISOString().slice(0, 10),
       }),
     onSuccess: () => {
-      setShowCreate(false)
-      setNewProject({ name: "", code: "", currency: "USD" })
+      setShowCreateProject(false)
+      setNewProject({ name: "", code: "", currency: "USD", budgetAmount: undefined })
+      // Make all cards refresh immediately
       queryClient.invalidateQueries({ queryKey: ["projects"] })
+      queryClient.invalidateQueries({ queryKey: ["tasks-analytics"] })
+      queryClient.invalidateQueries({ queryKey: ["timesheets"] })
+      queryClient.invalidateQueries({ queryKey: ["expenses"] })
     },
   })
 
+  // 🔄 Manual refresh for all KPI queries
+  function refreshAll() {
+    queryClient.invalidateQueries({ queryKey: ["projects"] })
+    queryClient.invalidateQueries({ queryKey: ["tasks-analytics"] })
+    queryClient.invalidateQueries({ queryKey: ["timesheets"] })
+    queryClient.invalidateQueries({ queryKey: ["expenses"] })
+    queryClient.invalidateQueries({ queryKey: ["users"] })
+  }
+
   return (
     <div className="space-y-8">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Project Manager</h1>
-          <p className="text-gray-600">Plan, approve, and bill</p>
+          <p className="text-gray-600">Plan, assign, and track</p>
         </div>
-        <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => setShowCreate((s) => !s)}>
-          New Project
-        </Button>
+        <div className="space-x-2">
+          <Button
+            className="bg-blue-600 hover:bg-blue-700"
+            onClick={() => setShowCreateProject((s) => !s)}
+          >
+            New Project
+          </Button>
+          <Button className="bg-gray-100 text-gray-900 hover:bg-gray-200" onClick={refreshAll}>
+            Refresh
+          </Button>
+        </div>
       </div>
 
+      {/* Dashboard Stats (real-time) */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card><CardHeader className="pb-3"><CardTitle className="text-sm">Active Projects</CardTitle></CardHeader><CardContent><p className="text-2xl font-bold">{active}</p></CardContent></Card>
-        <Card><CardHeader className="pb-3"><CardTitle className="text-sm">Tasks Completed</CardTitle></CardHeader><CardContent><p className="text-2xl font-bold">--</p></CardContent></Card>
-        <Card><CardHeader className="pb-3"><CardTitle className="text-sm">Hours Logged</CardTitle></CardHeader><CardContent><p className="text-2xl font-bold">{hoursLogged}</p></CardContent></Card>
-        <Card><CardHeader className="pb-3"><CardTitle className="text-sm">Approved Expenses</CardTitle></CardHeader><CardContent><p className="text-2xl font-bold">{approvedExpenses}</p></CardContent></Card>
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm">Active Projects</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold">{active}</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm">Tasks Completed</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold">{tasksCompleted}</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm">Hours Logged</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold">{hoursLogged}</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm">Approved Expenses</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold">{approvedExpenses}</p>
+          </CardContent>
+        </Card>
       </div>
 
-      {showCreate && (
+      {/* Create Project Form */}
+      {showCreateProject && (
         <div className="border rounded bg-white p-4 space-y-3">
           <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
             <input
@@ -78,7 +180,12 @@ export function DashboardManagerPage() {
               placeholder="Budget (optional)"
               type="number"
               value={newProject.budgetAmount ?? ""}
-              onChange={(e) => setNewProject((p) => ({ ...p, budgetAmount: e.target.value ? Number(e.target.value) : undefined }))}
+              onChange={(e) =>
+                setNewProject((p) => ({
+                  ...p,
+                  budgetAmount: e.target.value ? Number(e.target.value) : undefined,
+                }))
+              }
             />
             <select
               className="border rounded px-2 py-1"
@@ -91,20 +198,20 @@ export function DashboardManagerPage() {
             </select>
             <Button
               className="bg-green-600 hover:bg-green-700"
-              onClick={() => createMutation.mutate()}
-              disabled={!newProject.name || !newProject.code}
+              onClick={() => createProjectMutation.mutate()}
+              disabled={!newProject.name || !newProject.code || createProjectMutation.isPending}
             >
-              Create
+              {createProjectMutation.isPending ? "Creating..." : "Create"}
             </Button>
           </div>
         </div>
       )}
 
+      {/* Projects Grid */}
       <div>
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold">Projects</h2>
         </div>
-
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {projects.map((project: any) => (
             <Link key={project.id} to={`/projects/${project.id}`}>
@@ -117,7 +224,9 @@ export function DashboardManagerPage() {
                     </div>
                     <span
                       className={`text-xs px-2 py-1 rounded ${
-                        project.status === "ACTIVE" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
+                        project.status === "ACTIVE"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-gray-100 text-gray-800"
                       }`}
                     >
                       {project.status}
@@ -130,10 +239,12 @@ export function DashboardManagerPage() {
                     <span className="font-semibold">45%</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div className="bg-blue-600 h-2 rounded-full" style={{ width: "45%" }}></div>
+                    <div className="bg-blue-600 h-2 rounded-full" style={{ width: "45%" }} />
                   </div>
                   {project.budgetAmount && (
-                    <p className="text-xs text-gray-500">Budget: ${project.budgetAmount.toLocaleString()}</p>
+                    <p className="text-xs text-gray-500">
+                      Budget: ${Number(project.budgetAmount).toLocaleString()}
+                    </p>
                   )}
                 </CardContent>
               </Card>
@@ -144,4 +255,5 @@ export function DashboardManagerPage() {
     </div>
   )
 }
+
 export default DashboardManagerPage

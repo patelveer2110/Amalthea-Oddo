@@ -12,7 +12,10 @@ export class UsersController {
 
   @Get()
   async findAll() {
-    return this.usersService.findAll()
+    const users= this.usersService.findAll()
+    console.log("Users",users);
+    return users;
+    
   }
 
   @Get(":id")

@@ -8,3 +8,5 @@ export const projectsApi = {
   update: (id: string, data: Partial<Project>) => client.put<Project>(`/api/v1/projects/${id}`, data),
   getFinancials: (id: string) => client.get<ProjectFinancials>(`/api/v1/projects/${id}/financials`),
 }
+
+

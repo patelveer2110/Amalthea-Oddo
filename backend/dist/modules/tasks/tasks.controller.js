@@ -20,7 +20,7 @@ const tasks_service_1 = require("./tasks.service");
 const client_1 = require("@prisma/client");
 const class_validator_1 = require("class-validator");
 const create_task_dto_1 = require("./dto/create-task.dto");
-// ✅ DTO for moving task
+// DTO for moving task
 class MoveTaskDto {
 }
 __decorate([
@@ -36,17 +36,18 @@ let TasksController = class TasksController {
     }
     async getProjectTeamMembers(projectId) {
         const project = await this.tasksService.getProjectWithTeamMembers(projectId);
-        return project.teamMembers.map(member => ({
+        return project.teamMembers.map((member) => ({
             id: member.user.id,
             fullName: member.user.fullName,
             email: member.user.email,
-            role: member.role
+            role: member.role,
         }));
     }
     async findById(id) {
         return this.tasksService.findById(id);
     }
     async create(projectId, data) {
+        console.log("📤 Incoming create-task:", data);
         return this.tasksService.create(projectId, data);
     }
     async update(id, body) {

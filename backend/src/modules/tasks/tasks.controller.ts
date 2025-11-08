@@ -6,7 +6,7 @@ import { $Enums } from "@prisma/client"
 import { IsEnum } from "class-validator"
 import { CreateTaskDto } from "./dto/create-task.dto"
 
-// ✅ DTO for moving task
+// DTO for moving task
 class MoveTaskDto {
   @IsEnum($Enums.TaskState)
   state: $Enums.TaskState
@@ -26,13 +26,13 @@ export class TasksController {
 
   @Get("projects/:projectId/team-members")
   async getProjectTeamMembers(@Param("projectId") projectId: string) {
-    const project = await this.tasksService.getProjectWithTeamMembers(projectId);
-    return project.teamMembers.map(member => ({
+    const project = await this.tasksService.getProjectWithTeamMembers(projectId)
+    return project.teamMembers.map((member) => ({
       id: member.user.id,
       fullName: member.user.fullName,
       email: member.user.email,
-      role: member.role
-    }));
+      role: member.role,
+    }))
   }
 
   @Get("tasks/:id")
@@ -42,6 +42,7 @@ export class TasksController {
 
   @Post("projects/:projectId/tasks")
   async create(@Param("projectId") projectId: string, @Body() data: CreateTaskDto) {
+    console.log("📤 Incoming create-task:", data)
     return this.tasksService.create(projectId, data)
   }
 
