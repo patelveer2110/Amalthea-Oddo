@@ -2,7 +2,7 @@ import { useMemo } from "react"
 import { useQuery, useQueries } from "@tanstack/react-query"
 import { projectsApi } from "@/api/projects"
 import { tasksApi } from "@/api/tasks"
-import { projectsApi as _projectsApi } from "@/api/projects" // alias if needed elsewhere
+import { usersApi } from "@/api/users"
 import { useAuthStore } from "@/store/auth"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -14,7 +14,6 @@ function k(n: number) {
   if (!isFinite(n)) return "$0"
   return `$${(n / 1000).toFixed(1)}K`
 }
-// safe number
 const num = (v: any) => {
   const n = Number(v)
   return isFinite(n) ? n : 0
@@ -22,20 +21,40 @@ const num = (v: any) => {
 
 export function DashboardPage() {
   const navigate = useNavigate()
-  const user = useAuthStore((s) => s.user)
+  const storeUser = useAuthStore((s) => s.user)
 
-  const { data: projects = [] } = useQuery({
+  // Fetch /me if storeUser is not present yet (typical after a hard refresh)
+  const { data: meData, isLoading: meLoading } = useQuery({
+    queryKey: ["me"],
+    queryFn: async () => (await usersApi.getMe()).data,
+    enabled: !storeUser?.id, // only fetch if we don't already have a user in the store
+    staleTime: 5 * 60 * 1000,
+  })
+
+  // Fallbacks from localStorage so UI doesn't hide admin bits on the first paint
+  const meFromLS = (() => {
+    try {
+      return JSON.parse(localStorage.getItem("me") || "null")
+    } catch {
+      return null
+    }
+  })()
+  const roleFromLS = (localStorage.getItem("userRole") || "").toUpperCase()
+
+  // Choose user in this priority: store -> query -> localStorage
+  const user = storeUser ?? meData ?? meFromLS ?? null
+
+  // Resolve role similarly (uppercase for safe compare)
+  const role = ((user?.role || roleFromLS || "") as string).toUpperCase()
+  const isTeam = role === "TEAM_MEMBER"
+  const isPMOrAdmin = role === "PROJECT_MANAGER" || role === "ADMIN"
+
+  const { data: projects = [], isLoading: projectsLoading } = useQuery({
     queryKey: ["projects"],
     queryFn: async () => (await projectsApi.getAll()).data,
   })
 
-  const role = (user?.role || "").toUpperCase()
-  const isTeam = role === "TEAM_MEMBER"
-  const isPMOrAdmin = role === "PROJECT_MANAGER" || role === "ADMIN"
-
   // Visible projects:
-  // for TEAM, try to filter by membership if project.teamMembers is present;
-  // otherwise show all (fallback).
   const visibleProjects = useMemo(() => {
     if (!isTeam) return projects as any[]
     return (projects as any[]).filter((p) =>
@@ -93,7 +112,6 @@ export function DashboardPage() {
     return finQueries.reduce((sum, q) => sum + num(q.data?.revenue || 0), 0)
   }, [finQueries])
 
-  // Card-level helpers (progress per project based on tasks)
   function projectProgress(pid: string) {
     const list = tasksByProject[pid] || []
     const total = list.reduce((s, t) => s + num(t.estimateHours), 0)
@@ -107,8 +125,11 @@ export function DashboardPage() {
   const activeProjects = (visibleProjects as any[]).filter((p) => p.status === "ACTIVE").length
   const totalBudget = (visibleProjects as any[]).reduce((sum, p) => sum + num(p.budgetAmount), 0)
 
-  // New Project navigation (used by both buttons)
   const handleNewProject = () => navigate("/projects/new")
+
+  // If we truly don't know the role yet, avoid hiding admin UI prematurely
+  const roleResolved = !!role // or use (!meLoading)
+  const canShowAdminBits = roleResolved && isPMOrAdmin
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -118,17 +139,26 @@ export function DashboardPage() {
           <div>
             <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">Dashboard</h1>
             <p className="text-gray-600 mt-1">
-              Welcome back, <span className="font-medium text-gray-900">{user?.fullName}</span>
+              Welcome back,{" "}
+              <span className="font-medium text-gray-900">
+                {user?.fullName || user?.email || "—"}
+              </span>
             </p>
           </div>
-          {/* {isPMOrAdmin && (
+
+          {canShowAdminBits ? (
             <Button
-              className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
               onClick={handleNewProject}
+              className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
             >
               New Project
             </Button>
-          )} */}
+          ) : meLoading ? (
+            // while resolving role, show a disabled placeholder to avoid layout shift
+            <Button disabled className="bg-gray-200 text-gray-500 rounded-lg cursor-wait">
+              Loading…
+            </Button>
+          ) : null}
         </div>
 
         {/* KPI Widgets */}
@@ -199,61 +229,74 @@ export function DashboardPage() {
         <div>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-gray-900">Projects</h2>
-            {isPMOrAdmin && (
+            {canShowAdminBits ? (
               <Button
-                className="bg-blue text-gray-800 border border-gray-300"
                 onClick={handleNewProject}
+                // FIXED: "bg-blue" → "bg-blue-600 text-white"
+                className="bg-blue-600 text-white hover:bg-blue-700 rounded-lg"
               >
                 New Project
               </Button>
-            )}
+            ) : meLoading ? (
+              <Button disabled className="bg-gray-200 text-gray-500 rounded-lg cursor-wait">
+                Loading…
+              </Button>
+            ) : null}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {(visibleProjects as any[]).map((project) => {
-              const prog = projectProgress(project.id)
-              return (
-                <Link key={project.id} to={`/projects/${project.id}`} className="block">
-                  <Card className="h-full rounded-xl hover:shadow-lg transition-shadow border border-gray-100">
-                    <CardHeader className="pb-2">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <p className="text-xs font-mono text-gray-500">{project.code}</p>
-                          <CardTitle className="text-lg text-gray-900">{project.name}</CardTitle>
+          {projectsLoading ? (
+            <Card className="rounded-xl border border-dashed border-gray-300 bg-white shadow-sm">
+              <CardContent className="py-10 text-center text-gray-500">
+                Loading projects…
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {(visibleProjects as any[]).map((project) => {
+                const prog = projectProgress(project.id)
+                return (
+                  <Link key={project.id} to={`/projects/${project.id}`} className="block">
+                    <Card className="h-full rounded-xl hover:shadow-lg transition-shadow border border-gray-100">
+                      <CardHeader className="pb-2">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <p className="text-xs font-mono text-gray-500">{project.code}</p>
+                            <CardTitle className="text-lg text-gray-900">{project.name}</CardTitle>
+                          </div>
+                          <span
+                            className={`text-xs px-2 py-1 rounded-lg font-medium ${
+                              project.status === "ACTIVE"
+                                ? "bg-green-100 text-green-800"
+                                : "bg-gray-100 text-gray-800"
+                            }`}
+                          >
+                            {project.status}
+                          </span>
                         </div>
-                        <span
-                          className={`text-xs px-2 py-1 rounded-lg font-medium ${
-                            project.status === "ACTIVE"
-                              ? "bg-green-100 text-green-800"
-                              : "bg-gray-100 text-gray-800"
-                          }`}
-                        >
-                          {project.status}
-                        </span>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Progress</span>
-                        <span className="font-semibold text-gray-900">{prog.pct}%</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-                        <div
-                          className="bg-blue-600 h-2 rounded-full"
-                          style={{ width: `${prog.pct}%` }}
-                        />
-                      </div>
-                      {project.budgetAmount && (
-                        <p className="text-xs text-gray-500">
-                          Budget: ${num(project.budgetAmount).toLocaleString()}
-                        </p>
-                      )}
-                    </CardContent>
-                  </Card>
-                </Link>
-              )
-            })}
-          </div>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">Progress</span>
+                          <span className="font-semibold text-gray-900">{prog.pct}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                          <div
+                            className="bg-blue-600 h-2 rounded-full"
+                            style={{ width: `${prog.pct}%` }}
+                          />
+                        </div>
+                        {project.budgetAmount && (
+                          <p className="text-xs text-gray-500">
+                            Budget: ${num(project.budgetAmount).toLocaleString()}
+                          </p>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </Link>
+                )
+              })}
+            </div>
+          )}
         </div>
 
         {/* Team-only panels */}
@@ -267,8 +310,7 @@ export function DashboardPage() {
   )
 }
 
-// Optional: keep your previous “My Tasks / Profile” panel logic here.
-// This stub keeps your layout; plug back your earlier component if needed.
+// ----- TeamPanels stays the same -----
 function TeamPanels({
   tasksByProject,
   userId,
@@ -315,7 +357,6 @@ function TeamPanels({
         </CardContent>
       </Card>
 
-      {/* Slot for a future Profile/Activity card */}
       <Card className="rounded-xl shadow-sm border border-gray-100">
         <CardHeader className="pb-2">
           <CardTitle className="text-lg text-gray-900">Quick Actions</CardTitle>

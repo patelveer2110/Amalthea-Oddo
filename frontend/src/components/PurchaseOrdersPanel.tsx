@@ -73,7 +73,11 @@ export function PurchaseOrdersPanel({ projectId }: { projectId?: string }) {
   )
 
   const fmtMoney = (n: number) =>
-    (Number(n) || 0).toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 2 })
+    (Number(n) || 0).toLocaleString(undefined, {
+      style: "currency",
+      currency: "USD",
+      maximumFractionDigits: 2,
+    })
 
   const createPO = () => {
     if (!projectId) return alert("This Purchase Order must be associated with a project.")
@@ -138,14 +142,22 @@ export function PurchaseOrdersPanel({ projectId }: { projectId?: string }) {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {projectPOs.map((po: any) => (
-              <Card key={po.id} className="rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition">
+              <Card
+                key={po.id}
+                className="rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition"
+              >
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm text-gray-900">{po.number}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  <div className="text-sm text-gray-600">Vendor: <span className="text-gray-900">{po.vendorName}</span></div>
                   <div className="text-sm text-gray-600">
-                    Total: <span className="font-medium text-gray-900">{fmtMoney(Number(po.totalAmount ?? 0))}</span>
+                    Vendor: <span className="text-gray-900">{po.vendorName}</span>
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    Total:{" "}
+                    <span className="font-medium text-gray-900">
+                      {fmtMoney(Number(po.totalAmount ?? 0))}
+                    </span>
                   </div>
                   <div className="pt-2 flex gap-2">
                     <Button
@@ -158,7 +170,9 @@ export function PurchaseOrdersPanel({ projectId }: { projectId?: string }) {
                     <Button
                       variant="outline"
                       className="border-gray-300 hover:border-blue-600 hover:text-blue-600 rounded-lg"
-                      onClick={() => navigate(`/purchase-order/${po.id}`)}
+                      // FIX: navigate to an existing route from your router:
+                      // You have: <Route path="/vendor-bill/:poId" element={<VendorBillFromPoPage />} />
+                      onClick={() => navigate(`/vendor-bill/${po.id}`)}
                     >
                       View PO
                     </Button>
@@ -173,7 +187,9 @@ export function PurchaseOrdersPanel({ projectId }: { projectId?: string }) {
       {/* Create PO */}
       <Card className="rounded-xl border border-gray-100 shadow-sm">
         <CardHeader className="pb-2">
-          <CardTitle className="text-base font-semibold text-gray-900">Create Purchase Order</CardTitle>
+          <CardTitle className="text-base font-semibold text-gray-900">
+            Create Purchase Order
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           {!projectId && (
@@ -215,7 +231,12 @@ export function PurchaseOrdersPanel({ projectId }: { projectId?: string }) {
           ))}
 
           <div className="flex justify-between items-center">
-            <Button type="button" onClick={addLine} variant="outline" className="gap-2 border-gray-300 rounded-lg hover:border-blue-600 hover:text-blue-600">
+            <Button
+              type="button"
+              onClick={addLine}
+              variant="outline"
+              className="gap-2 border-gray-300 rounded-lg hover:border-blue-600 hover:text-blue-600"
+            >
               <PlusCircle className="w-4 h-4" />
               Add line
             </Button>

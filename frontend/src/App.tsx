@@ -8,17 +8,15 @@ import { useAuthStore } from "./store/auth"
 import { Navbar } from "./components/Navbar.tsx"
 
 import { LoginPage } from "./pages/LoginPage"
-import DashboardAdminPage from "./pages/DashboardAdminPage"
-import DashboardManagerPage from "./pages/DashboardManagerPage"
 import DashboardTeamPage from "./pages/DashboardTeamPage"
 import { ProjectPage } from "./pages/ProjectPage"
 import { TimesheetsPage } from "./pages/TimesheetsPage"
-import { FinancePage } from "./pages/FinancePage"
-import InvoiceFromSoPage from "./pages/InvoiceFromSoPage"
+// import { FinancePage } from "./pages/FinancePage"
+// import InvoiceFromSoPage from "./pages/InvoiceFromSoPage"
 import InvoiceViewPage from "./pages/InvoiceViewPage"
 import VendorBillFromPoPage from "./pages/VendorBillFromPoPage"
 import VendorBillViewPage from "./pages/VendorBillViewPage"
-import { ExpensesPage } from "./pages/ExpensesPage"
+// import { ExpensesPage } from "./pages/ExpensesPage"
 import { AnalyticsPage } from "./pages/AnalyticsPage"
 import { ProfilePage } from "./pages/ProfilePage"
 import ProjectCreatePage from "./pages/ProjectCreatePage"
@@ -97,22 +95,22 @@ export function App() {
           />
 
           {/* Role dashboards */}
-          <Route
+          {/* <Route
             path="/dashboard-admin"
             element={
               <ProtectedRoute>
                 <DashboardAdminPage />
               </ProtectedRoute>
             }
-          />
-          <Route
+          /> */}
+          {/* <Route
             path="/dashboard-manager"
             element={
               <ProtectedRoute>
                 <DashboardManagerPage />
               </ProtectedRoute>
             }
-          />
+          /> */}
 
           {/* App pages */}
           <Route
@@ -123,22 +121,22 @@ export function App() {
               </ProtectedRoute>
             }
           />
-          <Route
+          {/* <Route
             path="/finance"
             element={
               <ProtectedRoute>
                 <FinancePage />
               </ProtectedRoute>
             }
-          />
-          <Route
+          /> */}
+          {/* <Route
             path="/invoice/:soId"
             element={
               <ProtectedRoute>
                 <InvoiceFromSoPage />
               </ProtectedRoute>
             }
-          />
+          /> */}
           <Route
             path="/invoice/view/:invoiceId"
             element={
@@ -163,14 +161,14 @@ export function App() {
               </ProtectedRoute>
             }
           />
-          <Route
+          {/* <Route
             path="/expenses"
             element={
               <ProtectedRoute>
                 <ExpensesPage />
               </ProtectedRoute>
             }
-          />
+          /> */}
           <Route
             path="/tasks"
             element={
